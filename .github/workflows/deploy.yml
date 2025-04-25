@@ -1,40 +1,33 @@
 name: Deploy to EC2
 
-# Trigger the workflow on push to the main branch
 on:
   push:
     branches:
-      - node-js  # Change this to your default branch if it's not 'main'
+      - node-js  # Trigger deployment on push to 'node-js' branch
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest  # This specifies the runner environment
+    runs-on: ubuntu-latest
 
     steps:
-      # Checkout the repository's code
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # Set up SSH key for connecting to EC2
       - name: Set up SSH key
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 400 ~/.ssh/id_rsa
 
-      # Run deployment command
+      - name: Add EC2 host to known_hosts
+        run: |
+          ssh-keyscan -H 44.206.250.44 >> ~/.ssh/known_hosts
+
       - name: Deploy to EC2
         run: |
-          ssh -i ~/.ssh/id_rsa ubuntu@44.206.250.44 << 'EOF'
-            # Navigate to your application directory (adjust path as needed)
+          ssh -i ~/.ssh/id_rsa ${{ secrets.USER }}@44.206.250.44 << 'EOF'
             cd /path/to/your/app
-
-            # Pull the latest changes from the repository
-            git pull origin main
-
-            # Install dependencies (if needed for Node.js or static sites)
-            # npm install
-
-            # Restart your app (adjust the command based on your stack)
-            sudo systemctl restart your-app.service  # Use your service name if applicable
+            git pull origin node-js
+            npm install
+            pm2 restart your-app-name  # Or use: sudo systemctl restart your-app.service
           EOF
