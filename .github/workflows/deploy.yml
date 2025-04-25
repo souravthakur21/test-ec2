@@ -1,44 +1,3 @@
-<<<<<<< HEAD
-# name: Deploy to EC2
-
-# on:
-#   push:
-#     branches:
-#       - master  # Trigger deployment on push to 'node-js' branch
-
-# jobs:
-#   deploy:
-#     runs-on: ubuntu-latest
-
-#     steps:
-#       - name: Checkout code
-#         uses: actions/checkout@v2
-
-#       - name: Set up SSH key
-#         run: |
-#           mkdir -p ~/.ssh
-#           echo "${{ secrets.EC2_SSH_KEY}}" > ~/.ssh/id_rsa
-#           chmod 400 ~/.ssh/id_rsa
-
-#       - name: Add EC2 host to known_hosts
-#         run: |
-#           ssh-keyscan -H 54.173.95.20 >> ~/.ssh/known_hosts
-
-#       - name: Deploy to EC2
-#         run: |
-#           ssh -i ~/.ssh/id_rsa ${{ secrets.USER }}@54.173.95.20 << 'EOF'
-#             cd /home/ubuntu/test-ec2
-#             git pull origin node-js
-#             npm install
-#             pm2 restart your-app-name 
-#           EOF
-
-
-#           name: Deploy Python App to EC2
-=======
-name: Deploy Python App to EC2
->>>>>>> 4b8cf0bafca523791a74c2a2f64a1c4a3f60efc0
-
 on:
   push:
     branches:
@@ -70,9 +29,4 @@ jobs:
             pkill -f "python src/app.py" || true
 
             # Run your app in the background
-            nohup PORT=5001 python src/app.py > app.log 2>&1 &
-<<<<<<< HEAD
-          EOF
-=======
-          EOF
->>>>>>> 4b8cf0bafca523791a74c2a2f64a1c4a3f60efc0
+     
