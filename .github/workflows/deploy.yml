@@ -1,0 +1,43 @@
+name: Deploy Python App to EC2
+
+on:
+  push:
+    branches:
+      - master # Change this to any branch you prefer for triggering deploy
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Set up SSH key
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+    - name: Deploy App to EC2
+      run: |
+        ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+          # Optional: Clean up old app
+          rm -rf ~/python-app
+
+          # Clone the latest code
+          git clone https://github.com/<your-username>/<your-repo-name>.git ~/python-app
+          cd ~/python-app
+
+          # Setup Python virtual environment and install dependencies
+          python3 -m venv venv
+          source venv/bin/activate
+          pip install -r requirements.txt
+
+          # Kill previous app if running
+          pkill -f "python src/app.py" || true
+
+          # Run your app in the background
+          nohup PORT=5001 python src/app.py > app.log 2>&1 &
+        EOF
