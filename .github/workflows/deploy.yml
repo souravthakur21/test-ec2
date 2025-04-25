@@ -26,8 +26,8 @@ jobs:
       - name: Deploy to EC2
         run: |
           ssh -i ~/.ssh/id_rsa ${{ secrets.USER }}@44.206.250.44 << 'EOF'
-            cd /path/to/your/app
+            cd /home/ubuntu/test-ec2
             git pull origin node-js
             npm install
-            pm2 restart your-app-name  # Or use: sudo systemctl restart your-app.service
+            pm2 restart your-app-name 
           EOF
