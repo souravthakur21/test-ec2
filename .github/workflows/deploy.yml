@@ -11,9 +11,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Deploy to EC2
-        run: |
-          ssh -i ${{ secrets.EC2_SSH_KEY }} ${{ secrets.USER }}@${{ secrets.IP }} << 'EOF'
+      - name: Deploy to VM via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.IP }}
+          username: ${{ secrets.USER }}
+          password: ${{ secrets.EC2_SSH_KEY }}
+          script: |
             # Navigate to the application directory
             cd /home/ubuntu/python-app || exit
 
@@ -29,4 +33,4 @@ jobs:
             pkill -f "python src/app.py" || true
 
             # Run your app in the background
-     
+            nohup python src/app.py &
