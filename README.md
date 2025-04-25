@@ -55,7 +55,7 @@ $ curl http://localhost:5001/debug
 # In Browser visit -> http://localhost:5001/debug/ui
 ```
 
-## Sample output
+## Sample 
 
 Pointing your browser to <http://localhost:5001/debug/ui> will bring up the following:
 
