@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # name: Deploy to EC2
 
 # on:
@@ -34,6 +35,9 @@
 
 
 #           name: Deploy Python App to EC2
+=======
+name: Deploy Python App to EC2
+>>>>>>> 4b8cf0bafca523791a74c2a2f64a1c4a3f60efc0
 
 on:
   push:
@@ -67,4 +71,8 @@ jobs:
 
             # Run your app in the background
             nohup PORT=5001 python src/app.py > app.log 2>&1 &
+<<<<<<< HEAD
           EOF
+=======
+          EOF
+>>>>>>> 4b8cf0bafca523791a74c2a2f64a1c4a3f60efc0
