@@ -29,8 +29,5 @@ jobs:
             source venv/bin/activate
             pip install -r requirements.txt
       
-            # Kill previous app if running
-            pkill -f "python src/app.py" || true
-      
             # Run your app in the background
             nohup python src/app.py &
