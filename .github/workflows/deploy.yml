@@ -1,9 +1,44 @@
-name: Deploy to EC2
+# name: Deploy to EC2
+
+# on:
+#   push:
+#     branches:
+#       - master  # Trigger deployment on push to 'node-js' branch
+
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v2
+
+#       - name: Set up SSH key
+#         run: |
+#           mkdir -p ~/.ssh
+#           echo "${{ secrets.EC2_SSH_KEY}}" > ~/.ssh/id_rsa
+#           chmod 400 ~/.ssh/id_rsa
+
+#       - name: Add EC2 host to known_hosts
+#         run: |
+#           ssh-keyscan -H 54.173.95.20 >> ~/.ssh/known_hosts
+
+#       - name: Deploy to EC2
+#         run: |
+#           ssh -i ~/.ssh/id_rsa ${{ secrets.USER }}@54.173.95.20 << 'EOF'
+#             cd /home/ubuntu/test-ec2
+#             git pull origin node-js
+#             npm install
+#             pm2 restart your-app-name 
+#           EOF
+
+
+#           name: Deploy Python App to EC2
 
 on:
   push:
     branches:
-      - master  # Trigger deployment on push to 'node-js' branch
+      - master  # Trigger deployment on push to 'master' branch
 
 jobs:
   deploy:
@@ -13,21 +48,23 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up SSH key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_KEY}}" > ~/.ssh/id_rsa
-          chmod 400 ~/.ssh/id_rsa
-
-      - name: Add EC2 host to known_hosts
-        run: |
-          ssh-keyscan -H 54.173.95.20 >> ~/.ssh/known_hosts
-
       - name: Deploy to EC2
         run: |
-          ssh -i ~/.ssh/id_rsa ${{ secrets.USER }}@54.173.95.20 << 'EOF'
-            cd /home/ubuntu/test-ec2
-            git pull origin node-js
-            npm install
-            pm2 restart your-app-name 
+          ssh -i ${{ secrets.EC2_SSH_KEY }} ${{ secrets.USER }}@${{ secrets.IP }} << 'EOF'
+            # Navigate to the application directory
+            cd /home/ubuntu/python-app || exit
+
+            # Pull the latest code
+            git pull origin master
+
+            # Setup Python virtual environment and install dependencies
+            python3 -m venv venv
+            source venv/bin/activate
+            pip install -r requirements.txt
+
+            # Kill previous app if running
+            pkill -f "python src/app.py" || true
+
+            # Run your app in the background
+            nohup PORT=5001 python src/app.py > app.log 2>&1 &
           EOF
