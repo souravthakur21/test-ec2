@@ -14,23 +14,23 @@ jobs:
       - name: Deploy to VM via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.IP }}
-          username: ${{ secrets.USER }}
-          password: ${{ secrets.EC2_SSH_KEY }}
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USERNAME }}
+          key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
           script: |
             # Navigate to the application directory
             cd /home/ubuntu/python-app || exit
-
+      
             # Pull the latest code
             git pull origin master
-
+      
             # Setup Python virtual environment and install dependencies
             python3 -m venv venv
             source venv/bin/activate
             pip install -r requirements.txt
-
+      
             # Kill previous app if running
             pkill -f "python src/app.py" || true
-
+      
             # Run your app in the background
             nohup python src/app.py &
