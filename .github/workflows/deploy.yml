@@ -19,10 +19,10 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             # Navigate to the application directory
-            cd /home/ubuntu/python-app || exit
+            cd /home/ubuntu/test-ec2 || exit
       
             # Pull the latest code
-            git pull origin master
+            git pull
       
             # Setup Python virtual environment and install dependencies
             python3 -m venv venv
