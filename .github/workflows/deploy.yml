@@ -51,8 +51,9 @@ jobs:
             # Stop and remove the existing container (if running)
             sudo docker ps -q -f name=app-container | xargs -r sudo docker stop | xargs -r sudo docker rm
 
-            # Run the Docker container in detached mode
-            sudo docker run -d --name app-container -p 80:80 app-container
+            # Run the Docker container in detached mode and map port 3000 on the host to port 80 in the container
+            sudo docker run -d --name app-container -p 3000:80 app-container
+
 
             # Optional: Clean up unused images (if desired)
             sudo docker image prune -f
