@@ -1,9 +1,9 @@
-name: Deploy to EC2
+name: Deploy to EC2 with Docker
 
 on:
   push:
     branches:
-      - main  # Trigger deployment on push to the main branch
+      - main  # Trigger deployment on push to main branch
 
 jobs:
   deploy:
@@ -14,47 +14,54 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # Step 2: Set up SSH key for EC2 access
+      # Step 2: Set up SSH key
       - name: Set up SSH key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa  # Ensure EC2_SSH_KEY is stored as a secret
-          chmod 400 ~/.ssh/id_rsa  # Secure the private key
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 400 ~/.ssh/id_rsa
 
-      # Step 3: Add EC2 host to known_hosts (avoids SSH prompt on first connection)
-      - name: Add EC2 host to IP
+      # Step 3: Add EC2 IP to known hosts
+      - name: Add EC2 IP to known hosts
         run: |
-          ssh-keyscan -H ${{ secrets.IP }} >> ~/.ssh/known_hosts  # Add the EC2 instance IP to known_hosts
+          ssh-keyscan -H ${{ secrets.IP }} >> ~/.ssh/known_hosts
 
-      # Step 4: Install Docker on EC2 (if not already installed)
+      # Step 4: Install Docker (optional safety check)
       - name: Install Docker on EC2
         run: |
           ssh -i ~/.ssh/id_rsa ${{ secrets.USER }}@${{ secrets.IP }} << 'EOF'
-            sudo apt update
-            sudo apt install -y docker.io
-            sudo systemctl enable --now docker
+            if ! command -v docker &> /dev/null
+            then
+              echo "Docker not found. Installing..."
+              sudo apt update
+              sudo apt install -y docker.io
+              sudo systemctl enable --now docker
+              sudo usermod -aG docker $USER
+            fi
           EOF
 
-      # Step 5: Deploy to EC2 with Docker
-      - name: Deploy to EC2 with Docker
+      # Step 5: Deploy the app with Docker
+      - name: Deploy Docker container on EC2
         run: |
-          ssh -v -i ~/.ssh/id_rsa ${{ secrets.USER }}@${{ secrets.IP }} << 'EOF'
-            # Change directory to the application directory on EC2
+          ssh -i ~/.ssh/id_rsa ${{ secrets.USER }}@${{ secrets.IP }} << 'EOF'
+            set -e
             cd /home/ubuntu/test-ec2
 
-            # Pull the latest code from the repository
+            # Pull latest code
             git pull origin main
 
-            # Build the Docker image using the Dockerfile in the repository
+            # Build Docker image
             sudo docker build -t app-container .
 
-            # Stop and remove the existing container (if running)
-            sudo docker ps -q -f name=app-container | xargs -r sudo docker stop | xargs -r sudo docker rm
+            # Stop and remove old container if running
+            if sudo docker ps -q -f name=app-container; then
+              sudo docker stop app-container
+              sudo docker rm app-container
+            fi
 
-            # Run the Docker container in detached mode and map port 3000 on the host to port 80 in the container
-            sudo docker run -d --name app-container -p 3000:80 app-container
+            # Run new container
+            sudo docker run -d --name app-container -p 3000:3000 app-container
 
-
-            # Optional: Clean up unused images (if desired)
+            # Cleanup dangling images (optional)
             sudo docker image prune -f
           EOF
