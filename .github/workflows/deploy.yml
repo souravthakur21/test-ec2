@@ -22,7 +22,7 @@ jobs:
           chmod 400 ~/.ssh/id_rsa  # Secure the private key
 
       # Step 3: Add EC2 host to known_hosts (avoids SSH prompt on first connection)
-      - name: Add EC2 host to known_hosts
+      - name: Add EC2 host to IP
         run: |
           ssh-keyscan -H ${{ secrets.IP }} >> ~/.ssh/known_hosts  # Add the EC2 instance IP to known_hosts
 
