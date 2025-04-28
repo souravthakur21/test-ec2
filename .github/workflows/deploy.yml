@@ -26,7 +26,7 @@ jobs:
         run: |
           ssh-keyscan -H ${{ secrets.IP }} >> ~/.ssh/known_hosts  # Add the EC2 instance IP to known_hosts
 
-      # Step 4: Deploy to EC2 instance
+      # Step 4: Deploy to EC2 with Docker
       - name: Deploy to EC2
         run: |
           # Using verbose output for SSH to help debug any connection issues
@@ -37,7 +37,16 @@ jobs:
             # Pull the latest code from the repository
             git pull origin main
             
-            # Install the necessary npm packages
-            npm install
-            
-           
+            # Build the Docker image using the Dockerfile in the repository
+            docker build -t my-app .
+
+            # Stop and remove the existing container (if running)
+            docker ps -q -f name=my-app-container | xargs -r docker stop | xargs -r docker rm
+
+            # Run the Docker container in detached mode
+            docker run -d --name my-app-container -p 80:80 my-app
+
+            # Optional: Clean up unused images (if desired)
+            docker image prune -f
+
+          EOF
