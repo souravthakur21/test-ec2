@@ -40,7 +40,4 @@ jobs:
             # Install the necessary npm packages
             npm install
             
-            # Restart the app using PM2 (replace with your app name)
-            pm2 restart test-ec2 || pm2 start test-ec2
-          EOF
-
+           
