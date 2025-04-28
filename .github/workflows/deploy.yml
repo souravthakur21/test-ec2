@@ -3,31 +3,44 @@ name: Deploy to EC2
 on:
   push:
     branches:
-      - main
+      - main  # Trigger deployment on push to the main branch
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Checkout the code
       - name: Checkout code
         uses: actions/checkout@v2
 
+      # Step 2: Set up SSH key for EC2 access
       - name: Set up SSH key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
-          chmod 400 ~/.ssh/id_rsa
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa  # Ensure EC2_SSH_KEY is stored as a secret
+          chmod 400 ~/.ssh/id_rsa  # Secure the private key
 
+      # Step 3: Add EC2 host to known_hosts (avoids SSH prompt on first connection)
       - name: Add EC2 host to known_hosts
         run: |
-          ssh-keyscan -H ${{ IP }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H ${{ secrets.IP }} >> ~/.ssh/known_hosts  # Add the EC2 instance IP to known_hosts
 
+      # Step 4: Deploy to EC2 instance
       - name: Deploy to EC2
         run: |
-          ssh -i ~/.ssh/id_rsa ${{ secrets.USER }}@${{ IP }} << 'EOF'
+          # Using verbose output for SSH to help debug any connection issues
+          ssh -v -i ~/.ssh/id_rsa ${{ secrets.USER }}@${{ secrets.IP }} << 'EOF'
+            # Change directory to the application directory on EC2
             cd /home/ubuntu/test-ec2
-            git pull
+            
+            # Pull the latest code from the repository
+            git pull origin main
+            
+            # Install the necessary npm packages
             npm install
-            pm2 restart your-app-name 
+            
+            # Restart the app using PM2 (replace with your app name)
+            pm2 restart your-app-name || pm2 start your-app-name
           EOF
+
