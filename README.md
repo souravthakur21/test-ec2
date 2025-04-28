@@ -218,7 +218,7 @@ jobs:
 - [npm](https://www.npmjs.com/)
 
 
-## :memo: Licenses ##
+## :memo: License ##
 
 This project is under license from Apache 2.0. For more details, see the [LICENSE](LICENSE) file.
 
