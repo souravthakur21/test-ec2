@@ -63,7 +63,3 @@ jobs:
 
             # Run the container on port 3000
             sudo docker run -d --name app-container -p 3000:3000 app-container
-
-            # Optional: Clean up unused images
-            sudo docker image prune -f
-          EOF
